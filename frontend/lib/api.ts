@@ -7,8 +7,11 @@ const BASE = "/api";
 // directly) but is NOT real per-analyst authentication. Before this
 // handles actual case data beyond a pilot, replace with proper
 // login-based auth (see backend/app/auth.py for the current placeholder).
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
-const authHeaders = API_KEY ? { "X-Api-Key": API_KEY } : {};
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? "";
+
+const authHeaders: HeadersInit = API_KEY
+  ? { "X-Api-Key": API_KEY }
+  : {};
 
 async function handle<T>(res: Response): Promise<T> {
   if (!res.ok) {
