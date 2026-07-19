@@ -62,18 +62,55 @@ export default function CorrelationCard({ matches }: { matches: any[] }) {
         </span>
       </div>
 
-      <div className="flex items-baseline gap-3 mb-1">
-        <span className="text-4xl font-bold text-accent-300">{top.similarity_score}%</span>
-        <span className={`text-sm font-medium ${CONFIDENCE_COLOR[top.confidence_bucket]}`}>
-          {top.confidence_bucket} confidence
-        </span>
-      </div>
-      <Link
-        href={`/investigations/${top.matched_case_id}`}
-        className="text-sm text-slate-400 hover:text-accent-300 transition-colors"
-      >
-        Matched Case {top.matched_case_number} {top.matched_case_label ? `— ${top.matched_case_label}` : ""} →
-      </Link>
+      <div className="grid grid-cols-2 gap-3 mb-5">
+
+  <div className="rounded-lg bg-ink-950/60 p-3">
+    <p className="text-[11px] uppercase text-slate-500">
+      Compared With
+    </p>
+
+    <p className="text-2xl font-bold text-accent-300">
+      Knowledge Base
+    </p>
+
+    <p className="text-xs text-slate-400 mt-1">
+      Existing investigations
+    </p>
+  </div>
+
+  <div className="rounded-lg bg-ink-950/60 p-3">
+    <p className="text-[11px] uppercase text-slate-500">
+      Highest Match
+    </p>
+
+    <p className="text-2xl font-bold text-accent-300">
+      {top.similarity_score}%
+    </p>
+
+    <p className={`text-xs mt-1 ${CONFIDENCE_COLOR[top.confidence_bucket]}`}>
+      {top.confidence_bucket} confidence
+    </p>
+  </div>
+
+</div>
+
+<div className="mb-4">
+
+<p className="text-xs uppercase tracking-wide text-slate-500">
+Matched Investigation
+</p>
+
+<Link
+href={`/investigations/${top.matched_case_id}`}
+className="text-slate-200 hover:text-accent-300 font-medium"
+>
+{top.matched_case_number}
+{top.matched_case_label
+? ` — ${top.matched_case_label}`
+: ""}
+</Link>
+
+</div>
 
       <div className="mt-4 space-y-1.5">
         {top.matched_features.map((f: string) => (
