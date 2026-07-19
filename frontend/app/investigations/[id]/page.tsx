@@ -103,14 +103,63 @@ export default function CaseDetailPage() {
         <h2 className="font-semibold text-slate-200 mb-3">Risk Score Breakdown</h2>
         <div className="space-y-2">
           {Object.entries(caseData.risk_contributions || {}).map(([rule, info]: [string, any]) => (
-            <div key={rule} className="flex items-center justify-between text-sm">
-              <span className={info.counted ? "text-slate-300" : "text-slate-600"}>
-                {rule.replace(/_/g, " ")}
-                {!info.counted && <span className="text-[10px] ml-2 text-slate-600">(redundant evidence)</span>}
-              </span>
-              <span className={`font-mono ${info.counted ? "text-slate-200" : "text-slate-600"}`}>+{info.weight}</span>
-            </div>
-          ))}
+  <div
+    key={rule}
+    className="rounded-lg border border-ink-700 bg-ink-950/60 p-4 mb-3"
+  >
+    <div className="flex items-center justify-between">
+
+      <div>
+        <h4 className="font-semibold text-slate-100">
+          {info.title || rule.replace(/_/g, " ")}
+        </h4>
+
+        <p className="text-xs text-amber-400 mt-1">
+          Severity: {info.severity}
+        </p>
+      </div>
+
+      <span
+        className={`font-mono text-lg ${
+          info.counted ? "text-red-400" : "text-slate-500"
+        }`}
+      >
+        +{info.weight}
+      </span>
+
+    </div>
+
+    {info.reason && (
+      <div className="mt-3">
+        <p className="text-xs uppercase tracking-wide text-slate-500">
+          Reason
+        </p>
+
+        <p className="text-sm text-slate-300">
+          {info.reason}
+        </p>
+      </div>
+    )}
+
+    {info.evidence && (
+      <div className="mt-3">
+        <p className="text-xs uppercase tracking-wide text-slate-500">
+          Evidence
+        </p>
+
+        <p className="text-sm text-slate-400">
+          {info.evidence}
+        </p>
+      </div>
+    )}
+
+    {!info.counted && (
+      <div className="mt-3 text-xs text-slate-500 italic">
+        Redundant evidence (already counted)
+      </div>
+    )}
+  </div>
+))}
         </div>
       </section>
 

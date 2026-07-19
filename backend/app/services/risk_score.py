@@ -14,6 +14,44 @@ behavioral data and will not fire until sandbox infra exists — this
 is intentional per the scope decision, not a bug.
 """
 from dataclasses import dataclass
+RULE_DETAILS = {
+    "known_malicious_hash": {
+        "title": "Known Malicious Hash",
+        "severity": "Critical",
+        "reason": "This SHA256 hash is already known as malicious by threat intelligence providers.",
+        "evidence": "VirusTotal or MalwareBazaar matched the submitted file."
+    },
+    "packed_binary": {
+        "title": "Packed Binary",
+        "severity": "Medium",
+        "reason": "Packed executables often conceal malicious code and make reverse engineering more difficult.",
+        "evidence": "A packer signature or compression pattern was detected."
+    },
+    "high_entropy": {
+        "title": "High Entropy",
+        "severity": "Medium",
+        "reason": "Very high entropy suggests compression or encryption commonly used by malware.",
+        "evidence": "File entropy exceeded the configured threshold."
+    },
+    "unsigned_binary": {
+        "title": "Unsigned Binary",
+        "severity": "Medium",
+        "reason": "Unsigned executables are frequently used by malware because they cannot be verified against a trusted publisher.",
+        "evidence": "No Authenticode digital signature was found."
+    },
+    "embedded_executable": {
+        "title": "Embedded Executable",
+        "severity": "High",
+        "reason": "Embedding another executable is commonly used to deliver additional malware.",
+        "evidence": "Nested executable content was detected."
+    },
+    "upx_signature": {
+        "title": "UPX Signature",
+        "severity": "Medium",
+        "reason": "The executable appears to be compressed with UPX.",
+        "evidence": "UPX packer signature detected."
+    }
+}
 
 RULE_WEIGHTS = {
     "persistence": 20,           # dynamic-only — will not fire in this deployment
@@ -83,8 +121,17 @@ def calculate_risk(fired_rules: set[str]) -> RiskResult:
     # Ungrouped rules: each counts fully
     for rule in ungrouped_fired:
         weight = RULE_WEIGHTS.get(rule, 0)
-        contributions[rule] = {"weight": weight, "counted": True, "group": None}
-        total += weight
+        details = RULE_DETAILS.get(rule, {})
+
+        contributions[rule] = {
+            "title": details.get("title", rule.replace("_", " ").title()),
+            "severity": details.get("severity", "Low"),
+            "reason": details.get("reason", ""),
+            "evidence": details.get("evidence", ""),
+            "weight": weight,
+            "counted": True,
+            "group": None,
+        }
 
     # Grouped rules: only the highest-weight rule in each group counts
     for group, rules in grouped_fired.items():
@@ -93,11 +140,31 @@ def calculate_risk(fired_rules: set[str]) -> RiskResult:
         for rule in rules_sorted:
             weight = RULE_WEIGHTS.get(rule, 0)
             if rule == winner:
-                contributions[rule] = {"weight": weight, "counted": True, "group": group}
+                details = RULE_DETAILS.get(rule, {})
+
+                contributions[rule] = {
+                    "title": details.get("title", rule.replace("_", " ").title()),
+                    "severity": details.get("severity", "Low"),
+                    "reason": details.get("reason", ""),
+                    "evidence": details.get("evidence", ""),
+                    "weight": weight,
+                    "counted": True,
+                    "group": group,
+                }
                 total += weight
             else:
-                contributions[rule] = {"weight": 0, "counted": False, "group": group,
-                                        "label": "redundant evidence"}
+                details = RULE_DETAILS.get(rule, {})
+
+                contributions[rule] = {
+                    "title": details.get("title", rule.replace("_", " ").title()),
+                    "severity": details.get("severity", "Low"),
+                    "reason": details.get("reason", ""),
+                    "evidence": details.get("evidence", ""),
+                    "weight": 0,
+                    "counted": False,
+                    "group": group,
+                    "label": "Redundant evidence",
+                }
 
     total = min(total, 100)
     return RiskResult(score=total, level=risk_level_for(total), contributions=contributions)
